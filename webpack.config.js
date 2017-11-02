@@ -27,6 +27,10 @@ const commonConfig = merge([
       new HtmlWebpackPlugin({
         title: 'Webpack Boilerplate',
         template: 'app/app.html',
+        "files": {
+          "css": [],
+          "js": [],
+        },
         inject: 'body',
         cache: false,
         filename: 'app.html',
