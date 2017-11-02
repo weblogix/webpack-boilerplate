@@ -26,6 +26,8 @@ const commonConfig = merge([
     plugins: [
       new HtmlWebpackPlugin({
         title: 'Webpack demo',
+        filename: 'app.html',
+        template: 'app/app.html',
       }),
       new FlowBabelWebpackPlugin(),
     ],
