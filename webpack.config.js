@@ -17,7 +17,7 @@ const commonConfig = merge([
     // convention by default so if a directory contains *index.js*,
     // it resolves to that.
     entry: {
-      app: PATHS.app,
+      app: PATHS.app + '/app.js',
     },
     output: {
       path: PATHS.build,
@@ -52,7 +52,6 @@ const developmentConfig = merge([
   parts.generateSourceMaps({ type: 'cheap-module-eval-source-map' }),
   parts.loadCSS(),
   parts.devServer({
-    // Customize host/port here if needed
     host: process.env.HOST,
     port: process.env.PORT,
   }),

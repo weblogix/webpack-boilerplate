@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const PurifyCSSPlugin = require('purifycss-webpack');
 
@@ -7,14 +8,21 @@ exports.generateSourceMaps = ({ type }) => ({
 
 exports.devServer = ({ host, port } = {}) => ({
   devServer: {
+    contentBase: "./app",
     historyApiFallback: true,
     host, // Defaults to `localhost`
     port, // Defaults to 8080
+    hotOnly: true,
     overlay: {
       errors: true,
       warnings: true,
     },
   },
+  plugins: [
+    // Enable the plugin to let webpack communicate changes
+    // to WDS. --hot sets this automatically!
+    new webpack.HotModuleReplacementPlugin(),
+  ],
 });
 
 exports.postCSS = () => ({
@@ -63,7 +71,6 @@ exports.loadJavaScript = ({ include, exclude }) => ({
     ],
   },
 });
-
 
 exports.lintCSS = ({ include, exclude }) => ({
   module: {
