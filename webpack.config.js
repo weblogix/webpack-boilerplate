@@ -3,8 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const merge = require('webpack-merge');
 const parts = require('./webpack.parts');
 const glob = require('glob');
-var FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
-
+const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
+const ReloadPlugin = require('reload-html-webpack-plugin');
 
 const PATHS = {
   app: path.join(__dirname, 'app'),
@@ -25,9 +25,11 @@ const commonConfig = merge([
     },
     plugins: [
       new HtmlWebpackPlugin({
-        title: 'Webpack demo',
-        filename: 'app.html',
+        title: 'Webpack Boilerplate',
         template: 'app/app.html',
+        inject: 'body',
+        cache: false,
+        filename: 'app.html',
       }),
       new FlowBabelWebpackPlugin(),
     ],
@@ -50,6 +52,9 @@ const developmentConfig = merge([
     output: {
       devtoolModuleFilenameTemplate: 'webpack:///[absolute-resource-path]',
     },
+    plugins: [
+      new ReloadPlugin(),
+    ],
   },
   parts.generateSourceMaps({ type: 'cheap-module-eval-source-map' }),
   parts.loadCSS(),

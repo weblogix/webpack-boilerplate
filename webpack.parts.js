@@ -9,9 +9,7 @@ exports.generateSourceMaps = ({ type }) => ({
 exports.devServer = ({ host, port } = {}) => ({
   devServer: {
     contentBase: "./app",
-    historyApiFallback: {
-      index: 'app.html',
-    },
+    historyApiFallback: true,
     host, // Defaults to `localhost`
     port, // Defaults to 8080
     hotOnly: true,

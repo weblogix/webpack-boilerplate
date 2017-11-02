@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --watch webpack.config.js --watch webpack.parts.js --exec \"webpack-dev-server --env development\"",
+    "start": "nodemon --watch webpack.config.js --watch webpack.parts.js --exec \"webpack-dev-server --hot --env development\"",
     "build": "webpack --env production",
     "lint:js": "eslint app/ webpack.*.js --cache",
     "lint:style": "stylelint app/**/*.css"
@@ -30,6 +30,7 @@
     "postcss-loader": "^2.0.8",
     "purify-css": "^1.2.5",
     "purifycss-webpack": "^0.7.0",
+    "reload-html-webpack-plugin": "^0.1.2",
     "sass-loader": "^6.0.6",
     "style-loader": "^0.19.0",
     "stylelint": "^8.2.0",
