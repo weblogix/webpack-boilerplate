@@ -1,0 +1,7 @@
+body {
+  background: blue;
+}
+
+.test1 {
+  transform: rotate(7deg);
+}
