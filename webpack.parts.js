@@ -117,6 +117,16 @@ exports.loadCSS = ({ include, exclude } = {}) => ({
   },
 });
 
+exports.loadPUG = () => ({
+  module: {
+    rules: [
+      {
+        test: /\.pug$/,
+        use: 'pug-loader',
+      },
+    ]
+  }
+});
 
 exports.extractCSS = ({ include, exclude, use }) => {
   // Output extracted CSS to a file

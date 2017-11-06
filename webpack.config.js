@@ -17,7 +17,9 @@ const commonConfig = merge([
     // convention by default so if a directory contains *index.js*,
     // it resolves to that.
     entry: {
-      app: PATHS.app + '/app.js',
+      app: [
+        PATHS.app + '/index.js'
+      ]
     },
     output: {
       path: PATHS.build,
@@ -25,19 +27,13 @@ const commonConfig = merge([
     },
     plugins: [
       new HtmlWebpackPlugin({
-        title: 'Webpack Boilerplate',
-        template: 'app/app.html',
-        "files": {
-          "css": [],
-          "js": [],
-        },
-        inject: 'body',
-        cache: false,
-        filename: 'app.html',
+        template: PATHS.app + '/templates/index.pug',
+        inject: true,
       }),
       new FlowBabelWebpackPlugin(),
     ],
   },
+  parts.loadPUG(),
   parts.loadJavaScript({ include: PATHS.app }),
   parts.lintJavaScript({ include: PATHS.app }),
   parts.lintCSS({ include: PATHS.app }),
