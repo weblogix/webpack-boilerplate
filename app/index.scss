@@ -1,9 +1,95 @@
-$color: cyan;
+.products {
 
-body {
-  background: $color;
+  .cell {
+    height: 150px;
+
+    a {
+      display: block;
+      float: left;
+      width: 100%;
+    }
+  }
 }
 
-.test1 {
-  transform: rotate(7deg);
+
+.lb {
+  $z-index_overlay: 1;
+  $z-index_container: 10;
+  $z-index_close: 15;
+  $z-index_nav: 10;
+
+  &__overlay {
+    z-index: $z-index_overlay;
+    position: fixed;
+    background: rgb(0,0,0,0.5);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  &__container {
+    // background: #fff;
+    // z-index: $z-index_container;
+    // position: fixed;
+    // top: 0;
+    // left: 0;
+    // right: 0;
+    // bottom: 0;
+  }
+
+  &__main {
+    z-index: $z-index_container;
+    background: #ccc;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80%;
+    display: flex;
+
+    &__image {
+      flex: 1 1 auto;
+      background: red;
+
+      img {
+          background: blue;
+      }
+    }
+    &__previous,
+    &__next {
+      flex: 0 0 30px;
+      background: green;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: $z-index_nav;
+    }
+    &__previous {
+      left: 0;
+    }
+    &__next {
+      right: 0;
+    }
+  }
+
+  &__close {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    background: red;
+    z-index: $z-index_close;
+    cursor: pointer;
+  }
+
+}
+
+
+img.stretch {
+  object-fit: contain;
+  height: 100%;
+  width: 100%;
 }

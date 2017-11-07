@@ -15,7 +15,7 @@ exports.devServer = ({ host, port } = {}) => ({
     hotOnly: true,
     overlay: {
       errors: true,
-      warnings: true,
+      warnings: false,
     },
   },
   plugins: [
