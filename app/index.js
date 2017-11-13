@@ -5,44 +5,37 @@ import './index.scss';
 
 'use strict';
 
-function lightBox(options) {
+function lightBox(element = '', options) {
 
   var settings;
   var currentState = {
     activeObject: '',
-    mainImage: 'https://shop.r10s.jp/culture/cabinet/1707-pic27/co-f57521-immid_1.jpg',
+    mainImage: '',
     imageIndex: '',
     imageGroup: {},
     imageGroupCount: 0,
   };
   var defaultSettings = {
-    lightboxActivator: 'a.lightbox',
+    activeClass: 'active',
+    lightboxActivator: element != '' ? element : 'a.lightbox',
     lightboxClass: 'lb',
-    overlayClass: 'lb__overlay',
-    mainClass: 'lb__main',
-    mainWrapperClass: 'lb__main__image',
-    mainImgClass: 'lb__main__img stretch',
+    overlayClass: 'lb-Overlay',
     closeButtonClass: 'lb__close',
+    imageContainerClass: 'lb__image',
+    mainImageWrapper: 'lb__image__main',
+    mainImageClass: 'stretch',
     navNextContent: '>',
-    navNextClass: 'lb__main__next',
+    navNextClass: 'lb__image__next',
     navPreviousContent: '<',
-    navPreviousClass: 'lb__main__previous',
+    navPreviousClass: 'lb__image__previous',
+    thumbnailWrapperClass: 'lb__thumbnails',
+    thumbnailListClass: 'lb__thumnails__list',
   };
-  var container = {
-    lightbox: document.createElement('div'),
-    overlay: document.createElement('div'),
-    main: document.createElement('div'),
-    mainWrapper: document.createElement('div'),
-    mainImg: document.createElement('img'),
-    close: document.createElement('div'),
-    nav: document.createElement('div'),
-    navNext: document.createElement('div'),
-    navPrevious: document.createElement('div'),
-  };
+  var container = {};
 
   let init = function () {
     mergeConfig(options);
-    // Add listenings to lightbox activators
+    // Get an inventory of all the thumbnails
     document.querySelectorAll(settings.lightboxActivator).forEach(function (e) {
       e.addEventListener('click', function (e) {
         e.preventDefault();
@@ -87,9 +80,27 @@ function lightBox(options) {
   };
 
   let setMainImage = function (index) {
+
+    // Set image object
     currentState.imageIndex = index;
     currentState.mainImage = currentState.imageGroup[index].image;
-    container.mainImg.setAttribute('src', currentState.mainImage);
+
+    // Update main image
+    container.mainImage.setAttribute('src', currentState.mainImage);
+
+    // Update thumbnails
+    if(container.thumbnailsList != undefined && currentState.imageGroupCount > 0) {
+      console.log('d');
+      var children = container.thumbnailsList.childNodes;
+      for(var i = 0; i < currentState.imageGroupCount; i++) {
+        if (children[i].hasAttribute('class')) children[i].removeAttribute('class');
+
+        if(i == currentState.imageIndex) {
+          children[i].setAttribute('class', defaultSettings.activeClass);
+        }
+      }
+    }
+
   };
 
   // let getImageIndex = function(image) {
@@ -100,56 +111,68 @@ function lightBox(options) {
 
     currentState.activeObject = element;
 
+    container.lightbox = document.createElement('div'),
+    container.overlay = document.createElement('div'),
+    container.main = document.createElement('div'),
+    container.mainImageWrapper = document.createElement('div'),
+    container.mainImage = document.createElement('img'),
+    container.close = document.createElement('div'),
+
     buildImagesGroup();
     setMainImage(currentState.imageIndex);
-
-    buildContainer();
+    buildLightbox();
     buildOverlay();
-    buildMain();
     document.body.appendChild(container.lightbox);
     setListeners();
   };
 
-  let buildContainer = function () {
-    container.lightbox.className = settings.lightboxClass;
-  };
-
   let buildOverlay = function () {
     container.overlay.className = settings.overlayClass;
-    container.lightbox.appendChild(container.overlay);
+    document.body.insertBefore(container.overlay, container.lightbox.nextSibling);
+
+    container.overlay.addEventListener('click', function destroyOverlay() {
+      container.overlay.removeEventListener('click', destroyOverlay);
+      selfDestruct();
+    });
   };
 
-  let buildMain = function () {
+  let buildLightbox = function () {
+
+    container.lightbox.className = settings.lightboxClass;
+
     // Build Lightbox
-    container.main.className = settings.mainClass;
-    container.mainWrapper.className = settings.mainWrapperClass;
-    container.mainImg.className = settings.mainImgClass;
+    container.main.className = settings.imageContainerClass;
+    container.mainImageWrapper.className = settings.mainImageWrapper;
+    container.mainImage.className = settings.mainImageClass;
     container.close.className = settings.closeButtonClass;
 
     // Set the image src for main image
-    container.mainImg.src = currentState.mainImage;
+    container.mainImage.src = currentState.mainImage;
 
     // Append the lightbox to DOM
-    container.main.appendChild(container.mainWrapper);
-    container.mainWrapper.appendChild(container.mainImg);
+    container.main.appendChild(container.mainImageWrapper);
+    container.mainImageWrapper.appendChild(container.mainImage);
     container.lightbox.appendChild(container.main);
     container.lightbox.appendChild(container.close);
 
     if (currentState.imageGroup.length > 1) {
       buildNavigation();
+      buildThumbnails();
     }
   };
 
   let buildNavigation = function () {
+    container.navNext = document.createElement('div'),
+    container.navPrevious = document.createElement('div'),
+
     container.navNext.className = defaultSettings.navNextClass;
     container.navNext.innerHTML = defaultSettings.navNextContent;
     container.navPrevious.className = defaultSettings.navPreviousClass;
     container.navPrevious.innerHTML = defaultSettings.navPreviousContent;
 
-    container.main.insertBefore(container.navPrevious, container.mainWrapper);
-    container.main.insertBefore(container.navNext, container.mainWrapper.nextSibling);
+    container.main.insertBefore(container.navPrevious, container.mainImageWrapper);
+    container.main.insertBefore(container.navNext, container.mainImageWrapper.nextSibling);
 
-    // Add listeners
     container.navPrevious.addEventListener('click', previousImage);
     container.navNext.addEventListener('click', nextImage);
     document.addEventListener('keyup', keyNav);
@@ -185,6 +208,44 @@ function lightBox(options) {
     setMainImage(nextIndex);
   };
 
+
+  let buildThumbnails = function () {
+
+    container.thumbnails = document.createElement('div'),
+    container.thumbnails.className = defaultSettings.thumbnailWrapperClass;
+    container.lightbox.appendChild(container.thumbnails);
+
+    container.thumbnailsList = document.createElement('ul');
+    container.thumbnails.appendChild(container.thumbnailsList);
+
+    // Generate thumbnails
+    // for(var i = 0; i < currentState.imageGroupCount; i++) {
+
+    currentState.imageGroup.forEach(function(e, i){
+
+      var newList = document.createElement('li');
+      var newImage = document.createElement('img');
+
+      var image = currentState.imageGroup[i];
+      newImage.setAttribute('src',image.thumbnail) ;
+      newImage.setAttribute('data-index',i);
+      newImage.setAttribute('class', 'stretch');
+
+      if(i === currentState.imageIndex) {
+        newList.className = defaultSettings.activeClass;
+      }
+
+      newImage.addEventListener('click',function() {
+        setMainImage(i);
+      });
+
+      newList.appendChild(newImage);
+      container.thumbnailsList.appendChild(newList);
+
+    });
+
+  };
+
   let setListeners = function () {
     // Close Button
     container.close.addEventListener('click', selfDestruct);
@@ -207,6 +268,8 @@ function lightBox(options) {
     console.log('selfDestructing...');
     killListeners();
     document.body.removeChild(container.lightbox);
+    document.body.removeChild(container.overlay);
+    container = {};
   };
 
   let findIndexByKeyValue = function (array, key, value) {
@@ -223,5 +286,5 @@ function lightBox(options) {
 
 
 document.addEventListener('DOMContentLoaded', function () {
-  var lightbox = new lightBox; // lightbox.render();
+  var lightbox = new lightBox(); // lightbox.render();
 });
