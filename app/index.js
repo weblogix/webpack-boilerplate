@@ -14,6 +14,10 @@ function lightBox(element = '', options) {
     imageIndex: '',
     imageGroup: {},
     imageGroupCount: 0,
+    thumbnailsPerPage: 0,
+    thumbnailTotalPages: 1,
+    thumbnailsCurrentPage: 1,
+    thumbnailsContainerWidth: 0,
   };
   var defaultSettings = {
     activeClass: 'active',
@@ -28,9 +32,11 @@ function lightBox(element = '', options) {
     navNextClass: 'lb__image__next',
     navPreviousContent: '<',
     navPreviousClass: 'lb__image__previous',
-    thumbnailWrapperClass: 'lb__thumbnails',
-    thumbnailListClass: 'lb__thumnails__list',
+    thumbnailMainClass: 'lb__thumbnails',
+    thumbnailWrapperClass: 'lb__thumbnails__items',
+    thumbnailListClass: 'lb__thumbnails__items__list',
   };
+
   var container = {};
 
   let init = function () {
@@ -90,7 +96,6 @@ function lightBox(element = '', options) {
 
     // Update thumbnails
     if(container.thumbnailsList != undefined && currentState.imageGroupCount > 0) {
-      console.log('d');
       var children = container.thumbnailsList.childNodes;
       for(var i = 0; i < currentState.imageGroupCount; i++) {
         if (children[i].hasAttribute('class')) children[i].removeAttribute('class');
@@ -117,12 +122,17 @@ function lightBox(element = '', options) {
     container.mainImageWrapper = document.createElement('div'),
     container.mainImage = document.createElement('img'),
     container.close = document.createElement('div'),
+    container.thumbnails = [];
+
+    // Insert Lightbox into DOM
+    document.body.appendChild(container.lightbox);
 
     buildImagesGroup();
     setMainImage(currentState.imageIndex);
     buildLightbox();
     buildOverlay();
-    document.body.appendChild(container.lightbox);
+    calcSettings();
+    postBuild();
     setListeners();
   };
 
@@ -211,38 +221,140 @@ function lightBox(element = '', options) {
 
   let buildThumbnails = function () {
 
-    container.thumbnails = document.createElement('div'),
-    container.thumbnails.className = defaultSettings.thumbnailWrapperClass;
-    container.lightbox.appendChild(container.thumbnails);
+    container.thumbnailsMain = document.createElement('div'),
+    container.thumbnailsMain.className = defaultSettings.thumbnailMainClass;
+    container.lightbox.appendChild(container.thumbnailsMain);
+
+    container.thumbnailsWrapper = document.createElement('div');
+    container.thumbnailsWrapper.className = defaultSettings.thumbnailWrapperClass;
 
     container.thumbnailsList = document.createElement('ul');
-    container.thumbnails.appendChild(container.thumbnailsList);
+    container.thumbnailsList.setAttribute('class', defaultSettings.thumbnailListClass);
+
+    container.thumbnailsWrapper.appendChild(container.thumbnailsList);
+    container.thumbnailsMain.appendChild(container.thumbnailsWrapper);
 
     // Generate thumbnails
-    // for(var i = 0; i < currentState.imageGroupCount; i++) {
 
     currentState.imageGroup.forEach(function(e, i){
 
       var newList = document.createElement('li');
-      var newImage = document.createElement('img');
+      container.thumbnails[i] = document.createElement('img');
 
       var image = currentState.imageGroup[i];
-      newImage.setAttribute('src',image.thumbnail) ;
-      newImage.setAttribute('data-index',i);
-      newImage.setAttribute('class', 'stretch');
+      container.thumbnails[i].setAttribute('src',image.thumbnail) ;
+      container.thumbnails[i].setAttribute('class', 'stretch');
 
       if(i === currentState.imageIndex) {
         newList.className = defaultSettings.activeClass;
       }
 
-      newImage.addEventListener('click',function() {
+      // Add listeners to update main image
+      container.thumbnails[i].addEventListener('click',function() {
         setMainImage(i);
       });
 
-      newList.appendChild(newImage);
+      newList.appendChild(container.thumbnails[i]);
       container.thumbnailsList.appendChild(newList);
-
     });
+
+    calcSettings();
+
+    // Generate thumbnail pagination if
+    if(currentState.thumbnailsPerPage < currentState.imageGroupCount) {
+
+      currentState.thumbnailsCurrentPage = 1;
+
+      container.thumbnailsPrevious = document.createElement('div');
+      container.thumbnailsPrevious.setAttribute('class','lb__thumbnails__previous');
+      container.thumbnailsPrevious.innerHTML = '<';
+      container.thumbnailsMain.insertBefore(container.thumbnailsPrevious, container.thumbnailsWrapper);
+
+      container.thumbnailsNext = document.createElement('div');
+      container.thumbnailsNext.setAttribute('class','lb__thumbnails__next');
+      container.thumbnailsNext.innerHTML = '>';
+      container.thumbnailsMain.insertBefore(container.thumbnailsNext, container.thumbnailsWrapper.nextSibling);
+
+      var counter = 1;
+      var page = 1;
+
+      // Add data-page value to each thumbnail element
+      container.thumbnails.forEach(function(e) {
+
+        if(counter == currentState.thumbnailsPerPage) {
+          page++;
+          counter = 1;
+        } else {
+          counter++;
+        }
+        e.parentNode.setAttribute('data-page', page);
+
+      });
+
+      // thumbnail navigation
+      container.thumbnailsPrevious.addEventListener('click', previousThumbnailPage);
+      container.thumbnailsNext.addEventListener('click', nextThumbnailPage);
+
+    }
+
+  };
+
+  let nextThumbnailPage = function() {
+    if(currentState.thumbnailsCurrentPage * currentState.thumbnailsPerPage < currentState.imageGroupCount) {
+      var scrollDistance = 0;
+      var nextElement = currentState.thumbnailsCurrentPage * currentState.thumbnailsPerPage;
+      var loopStart = nextElement - currentState.thumbnailsPerPage;
+
+      for(var i = loopStart; i < nextElement; i++) {
+        scrollDistance = scrollDistance + container.thumbnails[i].parentNode.offsetWidth;
+      }
+      container.thumbnailsWrapper.scrollLeft += scrollDistance;
+      currentState.thumbnailsCurrentPage = currentState.thumbnailsCurrentPage + 1;
+    }
+  };
+
+  let previousThumbnailPage = function() {
+    if(currentState.thumbnailsCurrentPage > 1) {
+      var scrollDistance = 0;
+      var nextElement = currentState.thumbnailsCurrentPage + currentState.thumbnailsPerPage - 1;
+
+      for(var i = nextElement; i < (nextElement + currentState.thumbnailsPerPage); i++) {
+        scrollDistance = scrollDistance + container.thumbnails[i].parentNode.offsetWidth;
+      }
+      container.thumbnailsWrapper.scrollLeft += scrollDistance * -1;
+      currentState.thumbnailsCurrentPage = currentState.thumbnailsCurrentPage - 1;
+    }
+  };
+
+  // Calculate settings that may continue to change
+  let calcSettings = function() {
+    // Update global scope variables
+    currentState.thumbnailsPerPage = Math.floor(container.thumbnailsWrapper.offsetWidth / container.thumbnailsList.childNodes[0].offsetWidth);
+
+    currentState.thumbnailTotalPages = Math.ceil(currentState.imageGroupCount / currentState.thumbnailsPerPage);
+    // console.log('total thumbnails: ' + currentState.imageGroupCount);
+    // console.log('thumbnails per page: ' + currentState.thumbnailsPerPage);
+    // console.log('total pages: ' + currentState.thumbnailTotalPages);
+    // adjust thumbnails container
+    container.thumbnailsList.childNodes.forEach(element => {
+      currentState.thumbnailsContainerWidth = currentState.thumbnailsContainerWidth + element.offsetWidth;
+    });
+
+    if(currentState.thumbnailsPerPage < currentState.imageGroupCount) {
+      container.thumbnailsList.setAttribute('style','width: ' + currentState.thumbnailsContainerWidth + 'px');
+    } else {
+      container.thumbnailsList.className = container.thumbnailsList.getAttribute('class') + ' align-center';
+    }
+
+  };
+
+  let postBuild = function() {
+
+    // calculate the number of thumbnails to show
+
+    calcSettings();
+
+
 
   };
 

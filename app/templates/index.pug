@@ -104,6 +104,22 @@ body
     thumbnail: 'https://tshop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg?fitin=125:125',
     link: 'https://shop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg',
   },
+  {
+    thumbnail: 'https://tshop.r10s.jp/apworld/cabinet/cm/201702/tjg746_02.jpg?fitin=125:125',
+    link: 'https://shop.r10s.jp/apworld/cabinet/cm/201702/tjg746_02.jpg',
+  },
+  {
+    thumbnail: 'https://tshop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg?fitin=125:125',
+    link: 'https://shop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg',
+  },
+  {
+    thumbnail: 'https://tshop.r10s.jp/apworld/cabinet/cm/201702/tjg746_02.jpg?fitin=125:125',
+    link: 'https://shop.r10s.jp/apworld/cabinet/cm/201702/tjg746_02.jpg',
+  },
+  {
+    thumbnail: 'https://tshop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg?fitin=125:125',
+    link: 'https://shop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg',
+  },
   ]
 
 div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
@@ -111,9 +127,9 @@ div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
     div.cell
       a(href=image.link, rel="lightbox").lightbox
         img(src=image.thumbnail).thumbnail.stretch
-
-//- div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
-//-   each image in images2
-//-     div.cell
-//-       a(href=image.link, rel="group2").lightbox
-//-         img(src=image.thumbnail).thumbnail.stretch
+div(style='padding: 5rem 0')
+div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
+  each image in images2
+    div.cell
+      a(href=image.link, rel="group2").lightbox
+        img(src=image.thumbnail).thumbnail.stretch
