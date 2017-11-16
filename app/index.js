@@ -14,8 +14,9 @@ function lightBox(element = '', options) {
     imageIndex: '',
     imageGroup: {},
     imageGroupCount: 0,
+    imageNavVisibility: false,
+    thumbnailsVisibility: false,
     thumbnailsPerPage: 0,
-    thumbnailTotalPages: 1,
     thumbnailsCurrentPage: 1,
     thumbnailsContainerWidth: 0,
   };
@@ -54,7 +55,31 @@ function lightBox(element = '', options) {
     settings = Object.assign(defaultSettings, options);
   };
 
-  let buildImagesGroup = function () {
+  let build = function (element) {
+
+    currentState.activeObject = element;
+
+    container.lightbox = document.createElement('div'),
+    container.overlay = document.createElement('div'),
+    container.main = document.createElement('div'),
+    container.mainImageWrapper = document.createElement('div'),
+    container.mainImage = document.createElement('img'),
+    container.close = document.createElement('div'),
+    container.thumbnails = [];
+
+    generateObjects();
+    setMainImage(currentState.imageIndex);
+
+    // Insert Lightbox into DOM
+    document.body.appendChild(container.lightbox);
+
+    buildLightbox();
+    buildOverlay();
+    updateSettings();
+    setListeners();
+  };
+
+  let generateObjects = function () {
     // Get info of current image
     var element = currentState.activeObject;
     var imageSrc = element.href;
@@ -86,7 +111,7 @@ function lightBox(element = '', options) {
   };
 
   let setMainImage = function (index) {
-
+    console.log('setting main image to image index: ' + index);
     // Set image object
     currentState.imageIndex = index;
     currentState.mainImage = currentState.imageGroup[index].image;
@@ -102,39 +127,25 @@ function lightBox(element = '', options) {
 
         if(i == currentState.imageIndex) {
           children[i].setAttribute('class', defaultSettings.activeClass);
+
+          // Next thumbnail page if the thumbnail is half shown (belongs to the next page);
+          if(children[i].hasAttribute('data-page') && children[i].getAttribute('data-page') != currentState.thumbnailsCurrentPage) {
+            if(children[i].getAttribute('data-page') > currentState.thumbnailsCurrentPage) {
+              nextThumbnailPage(children[i].getAttribute('data-page'));
+            } else {
+              previousThumbnailPage(children[i].getAttribute('data-page'));
+            }
+          }
+
         }
       }
     }
 
+
   };
 
-  // let getImageIndex = function(image) {
-  //   return findIndexByKeyValue(currentState.imageGroup, 'image', image);
-  // };
 
-  let build = function (element) {
 
-    currentState.activeObject = element;
-
-    container.lightbox = document.createElement('div'),
-    container.overlay = document.createElement('div'),
-    container.main = document.createElement('div'),
-    container.mainImageWrapper = document.createElement('div'),
-    container.mainImage = document.createElement('img'),
-    container.close = document.createElement('div'),
-    container.thumbnails = [];
-
-    // Insert Lightbox into DOM
-    document.body.appendChild(container.lightbox);
-
-    buildImagesGroup();
-    setMainImage(currentState.imageIndex);
-    buildLightbox();
-    buildOverlay();
-    calcSettings();
-    postBuild();
-    setListeners();
-  };
 
   let buildOverlay = function () {
     container.overlay.className = settings.overlayClass;
@@ -166,9 +177,12 @@ function lightBox(element = '', options) {
     container.lightbox.appendChild(container.close);
 
     if (currentState.imageGroup.length > 1) {
-      buildNavigation();
-      buildThumbnails();
+      currentState.imageNavVisibility = true;
+      currentState.thumbnailsVisibility = true;
     }
+    if(currentState.imageNavVisibility == true) buildNavigation();
+    if(currentState.thumbnailsVisibility  == true) buildThumbnails();
+
   };
 
   let buildNavigation = function () {
@@ -196,26 +210,17 @@ function lightBox(element = '', options) {
     }
   };
 
-  let nextImage = function () {
+  let nextImage = function (currentImageIndex) {
     var maxIndex = currentState.imageGroupCount - 1;
-    var nextIndex;
     if (currentState.imageIndex < maxIndex) {
-      nextIndex = currentState.imageIndex + 1;
-    } else {
-      nextIndex = 0;
+      setMainImage(currentState.imageIndex + 1);
     }
-    setMainImage(nextIndex);
   };
 
-  let previousImage = function () {
-    var maxIndex = currentState.imageGroupCount - 1;
-    var nextIndex;
+  let previousImage = function (currentImageIndex) {
     if (currentState.imageIndex > 0) {
-      nextIndex = currentState.imageIndex - 1;
-    } else {
-      nextIndex = maxIndex;
+      setMainImage(currentState.imageIndex - 1);
     }
-    setMainImage(nextIndex);
   };
 
 
@@ -239,6 +244,7 @@ function lightBox(element = '', options) {
     currentState.imageGroup.forEach(function(e, i){
 
       var newList = document.createElement('li');
+      newList.setAttribute('data-index',i);
       container.thumbnails[i] = document.createElement('img');
 
       var image = currentState.imageGroup[i];
@@ -258,7 +264,8 @@ function lightBox(element = '', options) {
       container.thumbnailsList.appendChild(newList);
     });
 
-    calcSettings();
+
+    updateSettings();
 
     // Generate thumbnail pagination if
     if(currentState.thumbnailsPerPage < currentState.imageGroupCount) {
@@ -275,21 +282,7 @@ function lightBox(element = '', options) {
       container.thumbnailsNext.innerHTML = '>';
       container.thumbnailsMain.insertBefore(container.thumbnailsNext, container.thumbnailsWrapper.nextSibling);
 
-      var counter = 1;
-      var page = 1;
-
-      // Add data-page value to each thumbnail element
-      container.thumbnails.forEach(function(e) {
-
-        if(counter == currentState.thumbnailsPerPage) {
-          page++;
-          counter = 1;
-        } else {
-          counter++;
-        }
-        e.parentNode.setAttribute('data-page', page);
-
-      });
+      refreshThumbnailData();
 
       // thumbnail navigation
       container.thumbnailsPrevious.addEventListener('click', previousThumbnailPage);
@@ -299,43 +292,72 @@ function lightBox(element = '', options) {
 
   };
 
-  let nextThumbnailPage = function() {
-    if(currentState.thumbnailsCurrentPage * currentState.thumbnailsPerPage < currentState.imageGroupCount) {
+
+  let nextThumbnailPage = function(currentPage) {
+    if(typeof currentPage !== 'undefined') {
+      currentPage = currentState.thumbnailsCurrentPage;
+    }
+    var nextPage = currentPage >= currentState.imageGroupCount ? currentState.imageGroupCount : currentPage + 1;
+
+    if(currentPage * currentState.thumbnailsPerPage < currentState.imageGroupCount) {
       var scrollDistance = 0;
-      var nextElement = currentState.thumbnailsCurrentPage * currentState.thumbnailsPerPage;
+      var nextElement = currentPage * currentState.thumbnailsPerPage;
       var loopStart = nextElement - currentState.thumbnailsPerPage;
 
+      // Calculate distance of previous objects (left)
       for(var i = loopStart; i < nextElement; i++) {
         scrollDistance = scrollDistance + container.thumbnails[i].parentNode.offsetWidth;
       }
       container.thumbnailsWrapper.scrollLeft += scrollDistance;
-      currentState.thumbnailsCurrentPage = currentState.thumbnailsCurrentPage + 1;
+      currentState.thumbnailsCurrentPage = nextPage;
+      // refreshThumbnailData(nextElement);
     }
   };
 
-  let previousThumbnailPage = function() {
-    if(currentState.thumbnailsCurrentPage > 1) {
+  let previousThumbnailPage = function(currentPage) {
+    if(typeof currentPage !== 'undefined') {
+      currentPage = currentState.thumbnailsCurrentPage;
+    }
+    var previousPage = currentPage == 1 ? 1 : currentPage - 1;
+
+    if(previousPage >= 1) {
       var scrollDistance = 0;
-      var nextElement = currentState.thumbnailsCurrentPage + currentState.thumbnailsPerPage - 1;
+      var nextElement = previousPage + currentState.thumbnailsPerPage - 1;
 
       for(var i = nextElement; i < (nextElement + currentState.thumbnailsPerPage); i++) {
         scrollDistance = scrollDistance + container.thumbnails[i].parentNode.offsetWidth;
       }
       container.thumbnailsWrapper.scrollLeft += scrollDistance * -1;
-      currentState.thumbnailsCurrentPage = currentState.thumbnailsCurrentPage - 1;
+      currentState.thumbnailsCurrentPage = previousPage;
     }
   };
 
+  let refreshThumbnailData = function (needle) {
+    if(typeof needle == 'undefined') {
+      needle = currentState.imageIndex;
+    }
+    var counter = 1;
+    var page = 1;
+    var counterMax = currentState.imageGroupCount - 1;
+    for(var i = 0; i <= counterMax; i++) {
+      container.thumbnails[i].parentNode.setAttribute('data-page', page);
+      if(counter == currentState.thumbnailsPerPage) {
+        page++;
+        counter = 1;
+      } else {
+        counter++;
+      }
+    }
+    // currentState.thumbnailsCurrentPage = container.thumbnails[needle].parentNode.getAttribute('data-page');
+  };
+
   // Calculate settings that may continue to change
-  let calcSettings = function() {
+  let updateSettings = function() {
+    console.log('calculating window dimensions');
     // Update global scope variables
     currentState.thumbnailsPerPage = Math.floor(container.thumbnailsWrapper.offsetWidth / container.thumbnailsList.childNodes[0].offsetWidth);
 
-    currentState.thumbnailTotalPages = Math.ceil(currentState.imageGroupCount / currentState.thumbnailsPerPage);
-    // console.log('total thumbnails: ' + currentState.imageGroupCount);
-    // console.log('thumbnails per page: ' + currentState.thumbnailsPerPage);
-    // console.log('total pages: ' + currentState.thumbnailTotalPages);
-    // adjust thumbnails container
+    // width of all the images combined
     container.thumbnailsList.childNodes.forEach(element => {
       currentState.thumbnailsContainerWidth = currentState.thumbnailsContainerWidth + element.offsetWidth;
     });
@@ -345,17 +367,8 @@ function lightBox(element = '', options) {
     } else {
       container.thumbnailsList.className = container.thumbnailsList.getAttribute('class') + ' align-center';
     }
-
-  };
-
-  let postBuild = function() {
-
-    // calculate the number of thumbnails to show
-
-    calcSettings();
-
-
-
+    // console.log('thumbnailsPerPage: ' + currentState.thumbnailsPerPage);
+    refreshThumbnailData();
   };
 
   let setListeners = function () {
@@ -367,6 +380,7 @@ function lightBox(element = '', options) {
         selfDestruct();
       }
     });
+    window.addEventListener('resize', updateSettings);
   };
 
   let killListeners = function () {
