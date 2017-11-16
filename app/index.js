@@ -68,14 +68,13 @@ function lightBox(element = '', options) {
     container.thumbnails = [];
 
     generateObjects();
-    setMainImage(currentState.imageIndex);
 
     // Insert Lightbox into DOM
     document.body.appendChild(container.lightbox);
-
-    buildLightbox();
     buildOverlay();
-    updateSettings();
+    buildLightbox();
+    setMainImage(currentState.imageIndex);
+    refreshCurrentStates();
     setListeners();
   };
 
@@ -127,7 +126,7 @@ function lightBox(element = '', options) {
 
         if(i == currentState.imageIndex) {
           children[i].setAttribute('class', defaultSettings.activeClass);
-
+          console.log('jump to:' + children[i].getAttribute('data-page'));
           // Next thumbnail page if the thumbnail is half shown (belongs to the next page);
           if(children[i].hasAttribute('data-page') && children[i].getAttribute('data-page') != currentState.thumbnailsCurrentPage) {
             if(children[i].getAttribute('data-page') > currentState.thumbnailsCurrentPage) {
@@ -143,9 +142,6 @@ function lightBox(element = '', options) {
 
 
   };
-
-
-
 
   let buildOverlay = function () {
     container.overlay.className = settings.overlayClass;
@@ -210,14 +206,14 @@ function lightBox(element = '', options) {
     }
   };
 
-  let nextImage = function (currentImageIndex) {
+  let nextImage = function () {
     var maxIndex = currentState.imageGroupCount - 1;
     if (currentState.imageIndex < maxIndex) {
       setMainImage(currentState.imageIndex + 1);
     }
   };
 
-  let previousImage = function (currentImageIndex) {
+  let previousImage = function () {
     if (currentState.imageIndex > 0) {
       setMainImage(currentState.imageIndex - 1);
     }
@@ -265,7 +261,7 @@ function lightBox(element = '', options) {
     });
 
 
-    updateSettings();
+    refreshCurrentStates();
 
     // Generate thumbnail pagination if
     if(currentState.thumbnailsPerPage < currentState.imageGroupCount) {
@@ -352,7 +348,7 @@ function lightBox(element = '', options) {
   };
 
   // Calculate settings that may continue to change
-  let updateSettings = function() {
+  let refreshCurrentStates = function() {
     console.log('calculating window dimensions');
     // Update global scope variables
     currentState.thumbnailsPerPage = Math.floor(container.thumbnailsWrapper.offsetWidth / container.thumbnailsList.childNodes[0].offsetWidth);
@@ -380,7 +376,7 @@ function lightBox(element = '', options) {
         selfDestruct();
       }
     });
-    window.addEventListener('resize', updateSettings);
+    window.addEventListener('resize', refreshCurrentStates);
   };
 
   let killListeners = function () {
