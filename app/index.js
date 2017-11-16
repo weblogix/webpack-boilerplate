@@ -7,19 +7,8 @@ import './index.scss';
 
 function lightBox(element = '', options) {
 
-  var settings;
-  var currentState = {
-    activeObject: '',
-    mainImage: '',
-    imageIndex: '',
-    imageGroup: {},
-    imageGroupCount: 0,
-    imageNavVisibility: false,
-    thumbnailsVisibility: false,
-    thumbnailsPerPage: 0,
-    thumbnailsCurrentPage: 1,
-    thumbnailsContainerWidth: 0,
-  };
+  var settings, currentState, container;
+
   var defaultSettings = {
     activeClass: 'active',
     lightboxActivator: element != '' ? element : 'a.lightbox',
@@ -39,7 +28,7 @@ function lightBox(element = '', options) {
     thumbnailListClass: 'lb__thumbnails__items__list',
   };
 
-  var container = {};
+
 
   let init = function () {
     mergeConfig(options);
@@ -58,15 +47,30 @@ function lightBox(element = '', options) {
 
   let build = function (element) {
 
-    currentState.activeObject = element;
+    currentState = {
+      activeObject: '',
+      mainImage: '',
+      imageIndex: '',
+      imageGroup: {},
+      imageGroupCount: 0,
+      imageNavVisibility: false,
+      thumbnailsVisibility: false,
+      thumbnailsPerPage: 0,
+      thumbnailsCurrentPage: 1,
+      thumbnailsContainerWidth: 0,
+    };
 
-    container.lightbox = document.createElement('div'),
-    container.overlay = document.createElement('div'),
-    container.main = document.createElement('div'),
-    container.mainImageWrapper = document.createElement('div'),
-    container.mainImage = document.createElement('img'),
-    container.close = document.createElement('div'),
-    container.thumbnails = [];
+    container = {
+      lightbox: document.createElement('div'),
+      overlay: document.createElement('div'),
+      main: document.createElement('div'),
+      mainImageWrapper: document.createElement('div'),
+      mainImage: document.createElement('img'),
+      close: document.createElement('div'),
+      thumbnails: [],
+    };
+
+    currentState.activeObject = element;
 
     generateObjects();
 
@@ -401,7 +405,6 @@ function lightBox(element = '', options) {
     killListeners();
     document.body.removeChild(container.lightbox);
     document.body.removeChild(container.overlay);
-    container = {};
   };
 
   let findIndexByKeyValue = function (array, key, value) {
