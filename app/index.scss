@@ -54,6 +54,10 @@ $z-index_nav: 10;
     height: 80%;
     display: flex;
 
+    &--single {
+      height: 100%;
+    }
+
     &__previous,
     &__next {
       flex: 0 0 30px;

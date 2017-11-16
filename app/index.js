@@ -25,6 +25,7 @@ function lightBox(element = '', options) {
     lightboxActivator: element != '' ? element : 'a.lightbox',
     lightboxClass: 'lb',
     overlayClass: 'lb-Overlay',
+    descriptionContainerClass: 'lb__description',
     closeButtonClass: 'lb__close',
     imageContainerClass: 'lb__image',
     mainImageWrapper: 'lb__image__main',
@@ -92,9 +93,11 @@ function lightBox(element = '', options) {
       document.querySelectorAll('[rel=' + imageGroup + ']').forEach(function (e) {
         var image = e.href;
         var thumbnail = e.getElementsByTagName('img')[0].getAttribute('src');
+        var description = e.getElementsByTagName('img')[0].getAttribute('alt');
         imageArray.push({
           image: image,
           thumbnail: thumbnail,
+          description: description,
         });
       });
     } else {
@@ -107,6 +110,11 @@ function lightBox(element = '', options) {
     currentState.imageGroup = imageArray;
     currentState.imageGroupCount = imageArray.length;
     currentState.imageIndex = findIndexByKeyValue(currentState.imageGroup, 'image', imageSrc);
+
+    if (currentState.imageGroupCount > 1) {
+      currentState.imageNavVisibility = true;
+      currentState.thumbnailsVisibility = true;
+    }
   };
 
   let setMainImage = function (index) {
@@ -158,7 +166,8 @@ function lightBox(element = '', options) {
     container.lightbox.className = settings.lightboxClass;
 
     // Build Lightbox
-    container.main.className = settings.imageContainerClass;
+    container.main.className = settings.imageContainerClass + (currentState.imageGroupCount == 1 ? ' ' + settings.imageContainerClass +'--single' : '');
+
     container.mainImageWrapper.className = settings.mainImageWrapper;
     container.mainImage.className = settings.mainImageClass;
     container.close.className = settings.closeButtonClass;
@@ -172,10 +181,6 @@ function lightBox(element = '', options) {
     container.lightbox.appendChild(container.main);
     container.lightbox.appendChild(container.close);
 
-    if (currentState.imageGroup.length > 1) {
-      currentState.imageNavVisibility = true;
-      currentState.thumbnailsVisibility = true;
-    }
     if(currentState.imageNavVisibility == true) buildNavigation();
     if(currentState.thumbnailsVisibility  == true) buildThumbnails();
 
@@ -349,22 +354,25 @@ function lightBox(element = '', options) {
 
   // Calculate settings that may continue to change
   let refreshCurrentStates = function() {
-    console.log('calculating window dimensions');
-    // Update global scope variables
-    currentState.thumbnailsPerPage = Math.floor(container.thumbnailsWrapper.offsetWidth / container.thumbnailsList.childNodes[0].offsetWidth);
 
-    // width of all the images combined
-    container.thumbnailsList.childNodes.forEach(element => {
-      currentState.thumbnailsContainerWidth = currentState.thumbnailsContainerWidth + element.offsetWidth;
-    });
+    if(currentState.imageGroupCount > 1) {
+      console.log('calculating window dimensions');
+      // Update global scope variables
+      currentState.thumbnailsPerPage = Math.floor(container.thumbnailsWrapper.offsetWidth / container.thumbnailsList.childNodes[0].offsetWidth);
 
-    if(currentState.thumbnailsPerPage < currentState.imageGroupCount) {
-      container.thumbnailsList.setAttribute('style','width: ' + currentState.thumbnailsContainerWidth + 'px');
-    } else {
-      container.thumbnailsList.className = container.thumbnailsList.getAttribute('class') + ' align-center';
+      // width of all the images combined
+      container.thumbnailsList.childNodes.forEach(element => {
+        currentState.thumbnailsContainerWidth = currentState.thumbnailsContainerWidth + element.offsetWidth;
+      });
+
+      if(currentState.thumbnailsPerPage < currentState.imageGroupCount) {
+        container.thumbnailsList.setAttribute('style','width: ' + currentState.thumbnailsContainerWidth + 'px');
+      } else {
+        container.thumbnailsList.className = container.thumbnailsList.getAttribute('class') + ' align-center';
+      }
+      // console.log('thumbnailsPerPage: ' + currentState.thumbnailsPerPage);
+      refreshThumbnailData();
     }
-    // console.log('thumbnailsPerPage: ' + currentState.thumbnailsPerPage);
-    refreshThumbnailData();
   };
 
   let setListeners = function () {
@@ -381,8 +389,10 @@ function lightBox(element = '', options) {
 
   let killListeners = function () {
     container.close.removeEventListener('click', selfDestruct);
-    if (container.navPrevious.hasOwnProperty('click')) container.navPrevious.removeEventListener('click', previousImage);
-    if (container.navNext.hasOwnProperty('click')) container.navNext.removeEventListener('click', nextImage);
+    if(currentState.imageNavVisibility == true){
+      if (container.navPrevious.hasOwnProperty('click')) container.navPrevious.removeEventListener('click', previousImage);
+      if (container.navNext.hasOwnProperty('click')) container.navNext.removeEventListener('click', nextImage);
+    }
     document.removeEventListener('keyup', keyNav);
   };
 

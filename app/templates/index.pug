@@ -8,6 +8,13 @@ body
   h1 Lightbox
 
 -
+  let images0 = [
+  {
+    thumbnail: 'https://tshop.r10s.jp/culture/cabinet/1701-pic27/co-f57521-imchk_1.jpg?fitin=125:125',
+    link: 'https://shop.r10s.jp/culture/cabinet/1701-pic27/co-f57521-imchk_1.jpg',
+  }
+  ];
+
   let images = [
     {
       thumbnail: 'https://tshop.r10s.jp/culture/cabinet/1701-pic27/co-f57521-imchk_1.jpg?fitin=125:125',
@@ -121,11 +128,16 @@ body
     link: 'https://shop.r10s.jp/e-zakkamania/cabinet/07024/32158-0702404d_02.jpg',
   },
   ]
-
+div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
+  each image in images0
+    div.cell
+      a(href=image.link, alt="This is the product title").lightbox
+        img(src=image.thumbnail).thumbnail.stretch
+div(style='padding: 5rem 0')
 div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
   each image in images
     div.cell
-      a(href=image.link, rel="lightbox").lightbox
+      a(href=image.link, rel="lightbox", alt="This is the product title").lightbox
         img(src=image.thumbnail).thumbnail.stretch
 div(style='padding: 5rem 0')
 div.grid-x.grid-padding-x.small-up-2.medium-up-4.large-up-6.products
