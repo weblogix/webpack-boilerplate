@@ -59,7 +59,7 @@ $z-index_nav: 10;
     position: absolute;
     top: 0;
     right: 0;
-    // width: 30px;
+    min-width: 30px;
     height: 30px;
     background: red;
     z-index: $z-index_close;
