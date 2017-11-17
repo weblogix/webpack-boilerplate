@@ -251,7 +251,7 @@ function lightBox(element = '', options) {
 
   let buildThumbnails = function () {
 
-    container.footer = document.createElement('div'),
+    container.footer = document.createElement('footer'),
     container.footer.className = defaultSettings.footerClass;
     container.lightbox.appendChild(container.footer);
 
