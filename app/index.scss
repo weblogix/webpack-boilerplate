@@ -1,3 +1,15 @@
+
+%stretch {
+  object-fit: contain;
+  height: 100%;
+  max-width: 100%;
+}
+%flex-common {
+  display: flex;
+  justify-content: center;
+  flex-direction: column nowrap;
+}
+
 .products {
   .cell {
     height: 150px;
@@ -5,6 +17,7 @@
       display: block;
       float: left;
       width: 100%;
+      text-align: center;
     }
   }
 }
@@ -14,7 +27,7 @@ $z-index_lightbox: 10;
 $z-index_close: 15;
 $z-index_nav: 10;
 
-.lb-Overlay {
+.lb__overlay {
   z-index: $z-index_overlay;
   position: fixed;
   background: rgb(0, 0, 0, 0.5);
@@ -32,27 +45,31 @@ $z-index_nav: 10;
   right: 2rem;
   bottom: 2rem;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 
+
+  &__header {
+    @extend %flex-common;
+    flex: 0 1 30px;
+    background: cyan;
+  }
 
   &__close {
     position: absolute;
     top: 0;
     right: 0;
-    width: 30px;
+    // width: 30px;
     height: 30px;
     background: red;
     z-index: $z-index_close;
     cursor: pointer;
   }
 
-  &__image {
+  &__content {
     background: #ccc;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80%;
-    display: flex;
+    @extend %flex-common;
+    flex: 2 2 auto;
 
     &--single {
       height: 100%;
@@ -62,7 +79,7 @@ $z-index_nav: 10;
     &__next {
       flex: 0 0 30px;
       background: green;
-      height: 100%;
+      // height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -76,32 +93,30 @@ $z-index_nav: 10;
       right: 0;
     }
 
-    &__main {
-      flex: 1 1 auto;
-      background: red;
+    &__image {
+      width: 100%;
+      text-align: center;
+      background: #fff;
 
       img {
         background: blue;
+        @extend %stretch;
       }
     }
 
 
   }
 
-  &__thumbnails {
-    position: absolute;
-    bottom: 0rem;
-    left: 0rem;
-    right: 0rem;
-    height: 20%;
+  &__footer {
+    @extend %flex-common;
     background: pink;
+    flex: 0 1 175px;
     overflow: hidden;
-    display: flex;
 
     &__next,
     &__previous {
       flex: 0 0 30px;
-      height: 100%;
+      // height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -109,15 +124,7 @@ $z-index_nav: 10;
       background: yellow;
     }
 
-    &__next {
-
-    }
-
-    &__previous {
-
-    }
-
-    &__items {
+    &__thumbnails {
       flex: 1 1 auto;
       overflow: hidden;
       margin: 1rem;
@@ -139,6 +146,7 @@ $z-index_nav: 10;
           width: 125px;
           height: 125px;
           background: #fff;
+          text-align: center;
 
           &.active {
             border: 2px solid #000;
@@ -154,10 +162,4 @@ $z-index_nav: 10;
     }
 
   }
-}
-
-img.stretch {
-  object-fit: contain;
-  height: 100%;
-  width: 100%;
 }

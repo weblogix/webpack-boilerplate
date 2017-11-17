@@ -13,22 +13,24 @@ function lightBox(element = '', options) {
     activeClass: 'active',
     lightboxActivator: element != '' ? element : 'a.lightbox',
     lightboxClass: 'lb',
-    overlayClass: 'lb-Overlay',
-    descriptionContainerClass: 'lb__description',
+    overlayClass: 'lb__overlay',
+    headerClass: 'lb__header',
+    descriptionClass: 'lb__description',
+    closeButtonContent: 'X',
     closeButtonClass: 'lb__close',
-    imageContainerClass: 'lb__image',
-    mainImageWrapper: 'lb__image__main',
-    mainImageClass: 'stretch',
+    contentClass: 'lb__content',
+    imageWrapper: 'lb__content__image',
+    imageClass: 'stretch',
     navNextContent: '>',
-    navNextClass: 'lb__image__next',
+    navNextClass: 'lb__content__next',
     navPreviousContent: '<',
-    navPreviousClass: 'lb__image__previous',
-    thumbnailMainClass: 'lb__thumbnails',
-    thumbnailWrapperClass: 'lb__thumbnails__items',
-    thumbnailListClass: 'lb__thumbnails__items__list',
+    navPreviousClass: 'lb__content__previous',
+    footerClass: 'lb__footer',
+    thumbnailClass: 'lb__footer__thumbnails',
+    thumbnailListClass: 'lb__footer__thumbnails__list',
+    thumbnailPreviousClass: 'lb__footer__previous',
+    thumbnailNextClass: 'lb__footer__next',
   };
-
-
 
   let init = function () {
     mergeConfig(options);
@@ -49,7 +51,7 @@ function lightBox(element = '', options) {
 
     currentState = {
       activeObject: '',
-      mainImage: '',
+      image: '',
       imageIndex: '',
       imageGroup: {},
       imageGroupCount: 0,
@@ -63,22 +65,24 @@ function lightBox(element = '', options) {
     container = {
       lightbox: document.createElement('div'),
       overlay: document.createElement('div'),
-      main: document.createElement('div'),
-      mainImageWrapper: document.createElement('div'),
-      mainImage: document.createElement('img'),
+      header: document.createElement('header'),
+      description: document.createElement('div'),
+      content: document.createElement('div'),
+      imageWrapper: document.createElement('div'),
+      image: document.createElement('img'),
       close: document.createElement('div'),
       thumbnails: [],
     };
 
     currentState.activeObject = element;
-
+    document.body.setAttribute('style','overflow: hidden');
     generateObjects();
 
     // Insert Lightbox into DOM
     document.body.appendChild(container.lightbox);
     buildOverlay();
     buildLightbox();
-    setMainImage(currentState.imageIndex);
+    setimage(currentState.imageIndex);
     refreshCurrentStates();
     setListeners();
   };
@@ -97,7 +101,7 @@ function lightBox(element = '', options) {
       document.querySelectorAll('[rel=' + imageGroup + ']').forEach(function (e) {
         var image = e.href;
         var thumbnail = e.getElementsByTagName('img')[0].getAttribute('src');
-        var description = e.getElementsByTagName('img')[0].getAttribute('alt');
+        var description = e.getAttribute('alt');
         imageArray.push({
           image: image,
           thumbnail: thumbnail,
@@ -121,14 +125,19 @@ function lightBox(element = '', options) {
     }
   };
 
-  let setMainImage = function (index) {
-    console.log('setting main image to image index: ' + index);
+  let setimage = function (index) {
+
     // Set image object
     currentState.imageIndex = index;
-    currentState.mainImage = currentState.imageGroup[index].image;
+    currentState.image = currentState.imageGroup[index].image;
 
     // Update main image
-    container.mainImage.setAttribute('src', currentState.mainImage);
+    container.image.setAttribute('src', currentState.image);
+
+    // Update description
+
+    var description = currentState.imageGroup[index].description;
+    container.description.innerHTML = description;
 
     // Update thumbnails
     if(container.thumbnailsList != undefined && currentState.imageGroupCount > 0) {
@@ -170,20 +179,30 @@ function lightBox(element = '', options) {
     container.lightbox.className = settings.lightboxClass;
 
     // Build Lightbox
-    container.main.className = settings.imageContainerClass + (currentState.imageGroupCount == 1 ? ' ' + settings.imageContainerClass +'--single' : '');
+    container.content.className = settings.contentClass + (currentState.imageGroupCount == 1 ? ' ' + settings.contentClass +'--single' : '');
 
-    container.mainImageWrapper.className = settings.mainImageWrapper;
-    container.mainImage.className = settings.mainImageClass;
+    container.imageWrapper.className = settings.imageWrapper;
+    container.image.className = settings.imageClass;
     container.close.className = settings.closeButtonClass;
+    container.close.innerHTML = settings.closeButtonContent;
+
+    container.header.className = defaultSettings.headerClass;
+    container.description.className = defaultSettings.descriptionClass;
+
 
     // Set the image src for main image
-    container.mainImage.src = currentState.mainImage;
+    container.image.src = currentState.image;
 
     // Append the lightbox to DOM
-    container.main.appendChild(container.mainImageWrapper);
-    container.mainImageWrapper.appendChild(container.mainImage);
-    container.lightbox.appendChild(container.main);
-    container.lightbox.appendChild(container.close);
+    container.content.appendChild(container.imageWrapper);
+    container.imageWrapper.appendChild(container.image);
+
+    container.header.appendChild(container.close);
+    container.header.appendChild(container.description);
+
+    container.lightbox.appendChild(container.header);
+    container.lightbox.appendChild(container.content);
+
 
     if(currentState.imageNavVisibility == true) buildNavigation();
     if(currentState.thumbnailsVisibility  == true) buildThumbnails();
@@ -199,8 +218,8 @@ function lightBox(element = '', options) {
     container.navPrevious.className = defaultSettings.navPreviousClass;
     container.navPrevious.innerHTML = defaultSettings.navPreviousContent;
 
-    container.main.insertBefore(container.navPrevious, container.mainImageWrapper);
-    container.main.insertBefore(container.navNext, container.mainImageWrapper.nextSibling);
+    container.content.insertBefore(container.navPrevious, container.imageWrapper);
+    container.content.insertBefore(container.navNext, container.imageWrapper.nextSibling);
 
     container.navPrevious.addEventListener('click', previousImage);
     container.navNext.addEventListener('click', nextImage);
@@ -218,31 +237,31 @@ function lightBox(element = '', options) {
   let nextImage = function () {
     var maxIndex = currentState.imageGroupCount - 1;
     if (currentState.imageIndex < maxIndex) {
-      setMainImage(currentState.imageIndex + 1);
+      setimage(currentState.imageIndex + 1);
     }
   };
 
   let previousImage = function () {
     if (currentState.imageIndex > 0) {
-      setMainImage(currentState.imageIndex - 1);
+      setimage(currentState.imageIndex - 1);
     }
   };
 
 
   let buildThumbnails = function () {
 
-    container.thumbnailsMain = document.createElement('div'),
-    container.thumbnailsMain.className = defaultSettings.thumbnailMainClass;
-    container.lightbox.appendChild(container.thumbnailsMain);
+    container.footer = document.createElement('div'),
+    container.footer.className = defaultSettings.footerClass;
+    container.lightbox.appendChild(container.footer);
 
     container.thumbnailsWrapper = document.createElement('div');
-    container.thumbnailsWrapper.className = defaultSettings.thumbnailWrapperClass;
+    container.thumbnailsWrapper.className = defaultSettings.thumbnailClass;
 
     container.thumbnailsList = document.createElement('ul');
     container.thumbnailsList.setAttribute('class', defaultSettings.thumbnailListClass);
 
     container.thumbnailsWrapper.appendChild(container.thumbnailsList);
-    container.thumbnailsMain.appendChild(container.thumbnailsWrapper);
+    container.footer.appendChild(container.thumbnailsWrapper);
 
     // Generate thumbnails
 
@@ -262,7 +281,7 @@ function lightBox(element = '', options) {
 
       // Add listeners to update main image
       container.thumbnails[i].addEventListener('click',function() {
-        setMainImage(i);
+        setimage(i);
       });
 
       newList.appendChild(container.thumbnails[i]);
@@ -278,14 +297,14 @@ function lightBox(element = '', options) {
       currentState.thumbnailsCurrentPage = 1;
 
       container.thumbnailsPrevious = document.createElement('div');
-      container.thumbnailsPrevious.setAttribute('class','lb__thumbnails__previous');
+      container.thumbnailsPrevious.setAttribute('class', defaultSettings.thumbnailPreviousClass);
       container.thumbnailsPrevious.innerHTML = '<';
-      container.thumbnailsMain.insertBefore(container.thumbnailsPrevious, container.thumbnailsWrapper);
+      container.footer.insertBefore(container.thumbnailsPrevious, container.thumbnailsWrapper);
 
       container.thumbnailsNext = document.createElement('div');
-      container.thumbnailsNext.setAttribute('class','lb__thumbnails__next');
+      container.thumbnailsNext.setAttribute('class', defaultSettings.thumbnailNextClass);
       container.thumbnailsNext.innerHTML = '>';
-      container.thumbnailsMain.insertBefore(container.thumbnailsNext, container.thumbnailsWrapper.nextSibling);
+      container.footer.insertBefore(container.thumbnailsNext, container.thumbnailsWrapper.nextSibling);
 
       refreshThumbnailData();
 
@@ -405,6 +424,7 @@ function lightBox(element = '', options) {
     killListeners();
     document.body.removeChild(container.lightbox);
     document.body.removeChild(container.overlay);
+    document.body.setAttribute('style','overflow: auto');
   };
 
   let findIndexByKeyValue = function (array, key, value) {
@@ -421,5 +441,7 @@ function lightBox(element = '', options) {
 
 
 document.addEventListener('DOMContentLoaded', function () {
-  var lightbox = new lightBox(); // lightbox.render();
+  var lightbox = new lightBox('a.lightbox', {
+    closeButtonContent: 'X',
+  });
 });
