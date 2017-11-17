@@ -15,9 +15,9 @@ function lightBox(element = '', options) {
     lightboxClass: 'lb',
     overlayClass: 'lb__overlay',
     headerClass: 'lb__header',
-    descriptionClass: 'lb__description',
+    descriptionClass: 'lb__header__description',
     closeButtonContent: 'X',
-    closeButtonClass: 'lb__close',
+    closeButtonClass: 'lb__header__close',
     contentClass: 'lb__content',
     imageWrapper: 'lb__content__image',
     imageClass: 'stretch',
@@ -101,7 +101,7 @@ function lightBox(element = '', options) {
       document.querySelectorAll('[rel=' + imageGroup + ']').forEach(function (e) {
         var image = e.href;
         var thumbnail = e.getElementsByTagName('img')[0].getAttribute('src');
-        var description = e.getAttribute('alt');
+        var description = e.hasAttribute('alt') ? e.getAttribute('alt') : '';
         imageArray.push({
           image: image,
           thumbnail: thumbnail,
@@ -112,6 +112,7 @@ function lightBox(element = '', options) {
       imageArray.push({
         image: imageSrc,
         thumbnail: element.getElementsByTagName('img')[0].getAttribute('src'),
+        description: element.hasAttribute('alt') ? element.getAttribute('alt') : '',
       });
     }
 
@@ -437,6 +438,6 @@ function lightBox(element = '', options) {
 
 document.addEventListener('DOMContentLoaded', function () {
   var lightbox = new lightBox('a.lightbox', {
-    closeButtonContent: 'X',
+    closeButtonContent: 'Go Back ->',
   });
 });
