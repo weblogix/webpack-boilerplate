@@ -345,12 +345,7 @@ function lightBox(element = '', options) {
     var previousPage = currentPage == 1 ? 1 : currentPage - 1;
 
     if(previousPage >= 1) {
-      var scrollDistance = 0;
-      var nextElement = previousPage + currentState.thumbnailsPerPage - 1;
-
-      for(var i = nextElement; i < (nextElement + currentState.thumbnailsPerPage); i++) {
-        scrollDistance = scrollDistance + container.thumbnails[i].parentNode.offsetWidth;
-      }
+      var scrollDistance = container.thumbnailsWrapper.offsetWidth ;
       container.thumbnailsWrapper.scrollLeft += scrollDistance * -1;
       currentState.thumbnailsCurrentPage = previousPage;
     }

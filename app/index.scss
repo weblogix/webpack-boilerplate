@@ -101,6 +101,7 @@ $z-index_nav: 10;
       img {
         background: blue;
         @extend %stretch;
+        max-height: 100%;
       }
     }
 
