@@ -3,13 +3,19 @@
   object-fit: contain;
   height: 100%;
   max-width: 100%;
+  // width: 100%;
 }
 %flex-common {
   display: flex;
   justify-content: center;
-  flex-direction: column nowrap;
+  background: none;
 }
+
 $border-color: #999;
+$z-index_overlay: 1;
+$z-index_lightbox: 10;
+$z-index_close: 15;
+$z-index_nav: 10;
 
 
 .products {
@@ -23,11 +29,6 @@ $border-color: #999;
     }
   }
 }
-
-$z-index_overlay: 1;
-$z-index_lightbox: 10;
-$z-index_close: 15;
-$z-index_nav: 10;
 
 .lb__overlay {
   z-index: $z-index_overlay;
@@ -50,23 +51,20 @@ $z-index_nav: 10;
   display: flex;
   flex-direction: column;
   background: #fff;
-
+  border-radius: 4px;
 
   &__header {
     @extend %flex-common;
-    flex: 0 1 30px;
+    flex-flow: 0;
+    flex-shrink: 0;
     border-bottom: 1px solid $border-color;
     padding: 1rem;
     display: flex;
     flex-direction: row-reverse;
 
     &__close {
-      // position: absolute;
-      // top: 0;
-      // right: 0;
-      // min-width: 30px;
-      // height: 30px;
-      // z-index: $z-index_close;
+      position: absolute;
+      right: 1rem;
       cursor: pointer;
       flex: 0 0 auto;
     }
@@ -80,7 +78,7 @@ $z-index_nav: 10;
 
   &__content {
     @extend %flex-common;
-    flex: 2 2 auto;
+    flex: 1 1 auto;
     position: relative;
     padding: 0 30px;
 
@@ -128,18 +126,27 @@ $z-index_nav: 10;
       }
     }
 
+    &__counter {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #999;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 4px;
+    }
 
   }
 
   &__footer {
     @extend %flex-common;
-    flex: 0 1 175px;
+    flex-grow: 0;
+    flex-shrink: 0;
     overflow: hidden;
 
     &__next,
     &__previous {
       flex: 0 0 30px;
-      // height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -147,28 +154,27 @@ $z-index_nav: 10;
     }
 
     &__thumbnails {
-      flex: 1 1 auto;
-      overflow: hidden;
-      margin: 1rem;
+      flex-grow: 1;
+      flex-shrink: 1;
+      overflow-x: hidden;
+      margin: 0.5rem 0;
 
       &__list {
-        display: flex;
-        flex-direction: row;
         list-style: none;
         padding: 0;
         margin: 0;
-        width: 10000px;
 
         &.align-center {
-          justify-content: center;
-          width: 100% !important;
+          text-align: center;
         }
 
         li {
           width: 125px;
           height: 125px;
+          margin: 0 1rem;
+          padding: 0;
+          display: inline-block;
           text-align: center;
-          overflow: hidden;
 
           &.active {
             border: 2px solid #000;
@@ -176,6 +182,7 @@ $z-index_nav: 10;
 
           img {
             cursor: pointer;
+            @extend %stretch;
           }
 
         }
